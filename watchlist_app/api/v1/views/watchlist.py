@@ -1,4 +1,5 @@
 from rest_framework import status, permissions
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -58,11 +59,8 @@ class MovieListAPIView(APIView):
 #         return Response(serializer.data)
 
 class MovieDetailsAPIView(APIView):
-    def get(self, request, movie_id):
-        try:
-            movie = Movie.objects.get(id = movie_id)
-        except Movie.DoesNotExist:
-            return Response({'message': 'Movie id does not exist'}, status.HTTP_404_NOT_FOUND)
+    def get(self, request, pk):
+        movie = get_object_or_404(Movie, id = pk)
         serializer = WatchListSerializer(movie)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -98,7 +96,7 @@ class MovieDetailsAPIView(APIView):
 class PlatformListsAPIView(APIView):
     def get(self, request):
         platforms = Platform.objects.all()
-        serializer = PlatformSerializer(platforms, many=True)
+        serializer = PlatformSerializer(platforms, many=True,context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
